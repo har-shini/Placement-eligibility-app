@@ -18,19 +18,27 @@ st.title("Placement Eligibility Checker")
 st.sidebar.header("Eligibility Criteria")
 min_problems = st.sidebar.slider("Minimum Problems Solved", 0, 100, 50)
 min_soft_skills = st.sidebar.slider("Minimum Average Soft Skill Score", 50, 100, 75)
+min_projects = st.sidebar.slider("Minimum Projects Submitted", 0, 10, 1)
+min_mock_score = st.sidebar.slider("Minimum Mock Interview Score", 0, 100, 50)
+min_assessments = st.sidebar.slider("Minimum Assessments Completed", 0, 20, 5)
+
 
 # SQL Query
 query = f"""
-SELECT s.student_id, s.name, p.problems_solved,
+SELECT s.student_id, s.name, p.problems_solved, p.projects_submitted, p.assessments_completed,
        ROUND((ss.communication + ss.teamwork + ss.presentation)/3, 2) AS avg_soft_skills,
-       pl.placement_ready
+       pl.mock_interview_score, pl.placement_ready
 FROM Students s
 JOIN Programming p ON s.student_id = p.student_id
 JOIN SoftSkills ss ON s.student_id = ss.student_id
 JOIN Placements pl ON s.student_id = pl.student_id
 WHERE p.problems_solved >= {min_problems}
+  AND p.projects_submitted >= {min_projects}
+  AND p.assessments_completed >= {min_assessments}
   AND ((ss.communication + ss.teamwork + ss.presentation)/3) >= {min_soft_skills}
+  AND pl.mock_interview_score >= {min_mock_score}
 """
+
 
 # Execute
 conn = get_connection()
@@ -55,4 +63,5 @@ conn.close()
 
 st.subheader("Top 5 Placement-Ready Students")
 st.table(top_5)
+
 
